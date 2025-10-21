@@ -1,3 +1,5 @@
+import { buildOptions, buildCloseIcon, buildInput, buildTextArea } from './DOMcreation.js'
+
 export function SetupWindow() {
     /* */
     const container = document.querySelector('body');
@@ -6,72 +8,73 @@ export function SetupWindow() {
         rendered.remove();
     }
     const setup = document.createElement('div');
-    const closeIcon = document.createElementNS('http://www.w3.org/2000/svg','svg');
-        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-    const nameInput = document.createElement('input');
-    const descriptionInput = document.createElement('textarea');
-    const dueDateInput = document.createElement('input');
-    const statusSelection = document.createElement('select');
+    const wrapper = document.createElement('div');
+    const dueDateInput = buildInput( 'date', 'setup-dueDate', 'setup-duedate-field');
+    const selectInput = buildInput( 'text', 'status-select', 'status-select-field', `Seperate with ","`,`In-progress, Finished`);
+    const statusSelect = document.createElement('select');
+    const nameInput = buildInput( 'text', 'setup-input', 'setup-name-field', 'Project name..');
+    const descriptionInput = buildTextArea( 'textarea', 'setup-textarea-field', 'Project description..')
+        
+
     const createButton = document.createElement('button');
     /*         CSS / Visuals        */
     setup.classList.add('setup');
-    /*      SVG close button      */
-      path.setAttribute('d', 'M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z');
-        closeIcon.setAttribute('height', '20px');
-        closeIcon.setAttribute('width', '20px');
-        closeIcon.setAttribute('viewBox', '0 0 24 24');
-        closeIcon.classList.add('close-icon');
 
-    /*      Name input      */
-    nameInput.placeholder = 'Project name..';
-    nameInput.setAttribute('type', 'text');
-    nameInput.setAttribute('id', 'setup-name-field');
-
-    /*      Description input      */
-    descriptionInput.classList.add('textarea');
-    descriptionInput.setAttribute('id', 'setup-textarea-field');
-
-    /*      DueDate input      */
-    dueDateInput.setAttribute('type', 'date');
-    dueDateInput.setAttribute('id', 'setup-duedate-field');
-
-    /*      Status input      */
+        /*      Status input      */
+        statusSelect.classList.add('status-select');
+            buildOptions(statusSelect, 'options', ['In-progress', 'Finished']);
+        
+        wrapper.classList.add('wrapper');
+        
+        createButton.textContent = 'Create';
 
 
-    createButton.textContent = 'Create';
-    /* Event listeners */
-    closeIcon.addEventListener('click', ()=> {
-            setup.remove();
-        })
+    /*              Event listeners              */
+
+    
     createButton.addEventListener('click', async(e) => {
         e.preventDefault();
-        const name = nameInput.value;
+        const name = nameInput.value;           //                   Project inputs 
         const desc = descriptionInput.value;
-        const date = dueDateInput.value
-        const token = localStorage.getItem('token');
+        const date = dueDateInput.value;
+        const status = statusSelect.value;
         const project = {
                 name: name,
                 description: desc,
+                status: status,
                 dueDate: date,
-                token: token
             }
         const response = await fetch('http://127.0.0.1:5000/projects', {
             method: 'POST',
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                "Content-Type": "application/json" 
+            },
             body: JSON.stringify(project)
         })
         const data = response.json();
-        console.log(data); 
         
-
         location.reload();
     })
-    /* Appending */
-    closeIcon.appendChild(path);
-    setup.appendChild(closeIcon);
+
+    selectInput.addEventListener('input', () => {
+        while (statusSelect.firstChild) {
+            statusSelect.firstChild.remove();
+        }
+        buildOptions(statusSelect, 'status-select', selectInput.value.split(','));
+    })
+
+
+
+    /*      Appending    */
+    wrapper.appendChild(dueDateInput);
+    wrapper.appendChild(selectInput);
+    wrapper.appendChild(statusSelect);
+
+    buildCloseIcon(setup);
     setup.appendChild(nameInput);
     setup.appendChild(descriptionInput);
-    setup.appendChild(dueDateInput);
+    setup.appendChild(wrapper);
     setup.appendChild(createButton);
     container.appendChild(setup);
 }

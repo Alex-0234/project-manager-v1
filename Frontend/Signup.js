@@ -18,7 +18,6 @@ export function SignupButtons(container) {
             const path = document.createElementNS('http://www.w3.org/2000/svg','path');
         const usernameLabel = document.createElement('label');
         const usernameInput = document.createElement('input');
-        const emailInput = document.createElement('input');
         const passwordLabel = document.createElement('label');
         const passwordInput = document.createElement('input');
         const confirmLogin = document.createElement('button');
@@ -68,7 +67,9 @@ export function SignupButtons(container) {
 
         const response = await fetch('http://localhost:5000/users/login', {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json" 
+            },
             body: JSON.stringify(user)
             });
 
@@ -160,7 +161,9 @@ export function SignupButtons(container) {
 
         const response = await fetch('http://localhost:5000/users/register', {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json" 
+            },
             body: JSON.stringify(user)
             });
             const data = await response.json();
@@ -191,7 +194,7 @@ export function SignupButtons(container) {
     container.appendChild(login);
     container.appendChild(register);
 }
-export function Profile(container) {
+export async function Profile(container) {
     /* DOM elements */
     const logout = document.createElement('button');
     const avatar = document.createElement('img');
@@ -203,7 +206,7 @@ export function Profile(container) {
     usernameOut.classList.add('active-user');
     const token = localStorage.getItem('token');
      if (!token) return;
-     const decoded = parseJwt(token);
+     const decoded = await parseJwt(token);
     usernameOut.textContent = `${decoded.username}`;
     /* Event listeners */
     logout.addEventListener('click', () => {
@@ -215,6 +218,14 @@ export function Profile(container) {
         /* Rendering login / register buttons */
         SignupButtons(container);
         location.reload();
+    })
+    usernameOut.addEventListener('click', async() => {
+        const response = await fetch('http://localhost:5000/profile', {
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            }
+        })
+        console.log(response);
     })
     /* Final appending */
     container.appendChild(avatar);
