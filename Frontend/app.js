@@ -1,8 +1,180 @@
-import { SignupButtons, Profile } from "./Signup.js";
-import { SetupWindow } from "./projectSetup.js";
-import { parseJwt } from "./parseJwt.js";
+import { SignupWrapper } from '../functions.js';
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
+    const events = new Emitter();
+    const User = new Auth(events);
+    const Manager = new ProjectManager(events);
+
+})
+
+
+
+
+
+
+
+
+
+class Emitter {
+    constructor() {
+        this.listeners = {};
+    }
+    on(event, callback) {
+        if (!this.listeners[event]) {
+            this.listeners[event] = [];
+        }
+        this.listeners[event].push(callback);
+    }
+    emit(event, payload) {
+        for (const callback in this.listeners[event]) {
+            callback(payload);
+        }
+    }
+}
+class Auth {
+    constructor(events) {
+        this.events = events;
+
+        this.data = new Proxy({userId: null, username: null, token: null}, {
+            set: (t, p, v) => {
+                t[p] = v;
+            }
+        });
+        console.log(this.data)
+        this.loadEvents();
+    }
+    loadEvents() {
+        this.events.on('data:change', (payload) => {
+            const { userId, username, token } = payload;
+            this.data.userId = userId;
+            this.data.username = username;
+            this.data.token = token;
+        })
+        this.events.on('user:register:attempt', (payload) => {
+            const { username, password } = payload;
+            this.register(username, password)
+        })
+        this.events.on('user:register:success', () => {
+            // Logic to login maybe ??? Could do it in the register event itself..
+        })
+        this.events.on('user:register:failed', () => {
+            // Like a pop-up message ig.
+        })
+        this.events.on('user:login:attempt', (payload) => {
+            const { username, password } = payload;
+            this.login(username, password)
+        })
+        this.events.on('user:login:failed', () => {
+
+        })
+    }
+    async init() {
+        if (!localStorage.getItem('token')) {
+            //const response = await fetch('user/token/decrypt',{
+            // method: POST,
+            // }); 
+            if (response.ok) {
+                const data = await response.json();
+                this.events.emit('data:change', data); // Should count as login after refresh
+            }
+            else {
+                this.events.emit('UI:render:signup');
+            }
+        }
+        else {
+            this.events.emit('UI:render:signup');
+        }
+    }
+    async login(username, password, token) {
+        const response = await fetch('http://localhost:5000/user/login', {
+            method: 'POST',
+            body: { username: username, password: password },
+
+        })
+        if (response.ok) {
+            const data = await response.json();
+            this.events.emit('user:login:success', data);
+            this.events.emit('data:change', data);
+        }
+        else {
+            this.events.emit('user:login:failed');
+        }
+    }
+    async register(username, password) {
+        const response = await fetch('http://localhost:5000/user/register', {
+            method: 'POST',
+            body: { username: username, password: password },
+
+        })
+        if (response.ok) {
+            const data = await response.json();
+            this.events.on('user:register:success', data);
+        }
+    }
+}
+class UIManager {
+    constructor(events) {
+        this.events = events;
+        this.activeWindow = null;
+
+        this.loadEvents();
+    }
+    loadEvents() {
+        this.events.on('UI:render:signup', () => {
+            const exists = document.querySelector('.signup-wrapper');
+            exists && exists.remove();
+            SignupWrapper(this.events);
+        });
+        this.events.on('UI:render:projects', (payload) => {
+            // Logic to render / remove UI;
+        })
+    }
+
+}
+
+class ProjectManager {
+    constructor(events) {
+        this.events = events;
+        this.currentProject = null;
+        this.AllProjects = [];
+        this.view = 'table';
+
+        this.loadEvents();
+    }
+    loadEvents() {
+        this.events.on('user:register:success', () => {
+            // Logic to render / remove UI;
+        });
+        this.events.on('user:retrieve:projects', async () => {
+            const response = await fetch('http://localhost:5000/user/projects')
+            if(response.ok) {
+                const data = await response.json();
+                
+            }
+            else {
+                this.events.on('user:retrieve:projects:failed', () => {
+                    // Code to render message or whatever..
+                })
+            }
+        })
+        this.events.on('user:login:success', (payload) => {
+            this.events.emit('UI:render:projects', payload);
+
+        })
+    }
+    async loadUserProjects() {
+        // Loading user projects from DB
+    }
+
+}
+
+
+
+
+
+
+
+/* document.addEventListener('DOMContentLoaded', async () => {
 
     const headerWrapper = document.querySelector('.main-page-user');
     const addProjectButton = document.querySelector('.add-project');
@@ -15,7 +187,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const manager = new ProjectManager(decoded.id);
                 Profile(headerWrapper);
 
-                /*             Appending admin html           */
+                
                 const admin = document.querySelector('.main-page-user')
                 const link = document.createElement('a');
                 link.setAttribute('href', './admin.html');
@@ -71,7 +243,7 @@ class ProjectManager {
                 projectName.classList.add('sidebar-project')
                 text.classList.add('sidebar-project-name');
                 text.setAttribute('href', '/');
-                /* Event listeners */
+                
                 text.addEventListener('click', (e) => {
                     e.preventDefault();
                     if (text.classList.contains('active')) {
@@ -83,11 +255,11 @@ class ProjectManager {
                         document.querySelectorAll('.sidebar-project-name').forEach(b => b.classList.remove('active'));
                         text.classList.add('active');
                         
-                        /* Logic for generating content will be here */
+                       
                         this.renderProject(`${t.project.name}`);
                     }
                 })
-                /* Appending */
+                
                 container.appendChild(projectName);
             })
         }
@@ -111,7 +283,7 @@ class ProjectManager {
         })
         const thisProject = this.currentProjects.filter(t => t.project.name === name);
 
-        /*             CSS / Visuals             */
+
         rowBlock.classList.add('project-row-block');
         descriptionBlock.classList.add('projects-description-block')
         wrapper.classList.add('project'); //Temporary class
@@ -121,7 +293,7 @@ class ProjectManager {
         dueDateOutput.textContent = `${thisProject[0].project.dueDate}`;
         statusOutput.textContent = `${thisProject[0].project.status}`;
 
-        /*               Appending               */
+
         rowBlock.appendChild(nameOutput);
         rowBlock.appendChild(startDateOutput);
         rowBlock.appendChild(dueDateOutput);
@@ -136,4 +308,9 @@ class ProjectManager {
         const child = container.querySelector('div');
         if (child) child.remove();
     }
-}
+} */
+
+
+
+
+
