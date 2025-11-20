@@ -16,10 +16,10 @@
         const btn = document.querySelector('button');
         btn.addEventListener('click', (e)=> {
             try {
-                const input = document.querySelector('input');
+                const inputVal = toString(document.querySelector('input').value);
                 e.preventDefault();
                 if( input.value === null) throw new Error('uhhh');
-                const response = fetch(`http://localhost:5000/users/${input.value}`, {
+                const response = fetch(`http://localhost:5000/users/`+`${inputVal}`, {
                 headers: {
                     'Authorization': 'Bearer ' + localStorage.getItem('token')
                 }
