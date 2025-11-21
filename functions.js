@@ -38,5 +38,5 @@ export function SignupWrapper(events) {
         events.emit('UI:window', 'log-in');
     })
     wrapper.append(login, signup);
-    document.head.appendChild(wrapper);
+    document.querySelector('.main-page-user').appendChild(wrapper);
 }

@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
+const secret = process.env.JWT_SECRET;
 
 const app = express();
 const db = await connectDB();
@@ -53,6 +54,21 @@ app.get('/user/profile', async (req, res) => {
     console.error('Failed to fetch profile:', err.message);
     alert('Something went wrong, please try again.');
   }
+})
+app.post('user/token/decrypt', (req, res) => {
+  const token = req.body.token;
+  try {
+    const decoded = jwt.verify(token, secret);
+    console.log(decoded);
+    res.status(200).json(decoded);
+
+  }
+  catch (err) {
+    err.message = 'TokenExpiredError' ? res.status(400).json(err.message) : res.status(400).json('...')
+  }
+  
+  
+  
 })
 
 app.post('/user/login', async(req, res) => {

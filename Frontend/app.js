@@ -2,8 +2,12 @@ import { SignupWrapper } from '../functions.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const events = new Emitter();
+    const projectManager = new ProjectManager(events);
+    const UI = new UIManager(events);
     const User = new Auth(events);
-    const Manager = new ProjectManager(events);
+    
+
+    User.init();
 
 })
 
@@ -26,7 +30,7 @@ class Emitter {
         this.listeners[event].push(callback);
     }
     emit(event, payload) {
-        for (const callback in this.listeners[event]) {
+        for (const callback of this.listeners[event]) {
             callback(payload);
         }
     }
@@ -36,8 +40,11 @@ class Auth {
         this.events = events;
 
         this.data = new Proxy({userId: null, username: null, token: null}, {
-            set: (t, p, v) => {
-                t[p] = v;
+            set: (target, prop, value) => {
+                target[prop] = value;
+                if(prop === 'username') {
+                    projectManager.loadUserProjects(value);
+                }
             }
         });
         console.log(this.data)
@@ -46,9 +53,6 @@ class Auth {
     loadEvents() {
         this.events.on('data:change', (payload) => {
             const { userId, username, token } = payload;
-            this.data.userId = userId;
-            this.data.username = username;
-            this.data.token = token;
         })
         this.events.on('user:register:attempt', (payload) => {
             const { username, password } = payload;
@@ -62,17 +66,20 @@ class Auth {
         })
         this.events.on('user:login:attempt', (payload) => {
             const { username, password } = payload;
-            this.login(username, password)
+            this.login(username, password);
         })
         this.events.on('user:login:failed', () => {
 
         })
     }
     async init() {
-        if (!localStorage.getItem('token')) {
-            //const response = await fetch('user/token/decrypt',{
-            // method: POST,
-            // }); 
+        const token = localStorage.getItem('token');
+        if (token) {
+            const response = await fetch('http://localhost:5000/user/token/decrypt',{
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: token })
+            }); 
             if (response.ok) {
                 const data = await response.json();
                 this.events.emit('data:change', data); // Should count as login after refresh
@@ -88,13 +95,16 @@ class Auth {
     async login(username, password, token) {
         const response = await fetch('http://localhost:5000/user/login', {
             method: 'POST',
-            body: { username: username, password: password },
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username, password: password }),
 
         })
         if (response.ok) {
             const data = await response.json();
             this.events.emit('user:login:success', data);
-            this.events.emit('data:change', data);
+            this.data.userId = userId;
+            this.data.username = username;
+            this.data.token = token;
         }
         else {
             this.events.emit('user:login:failed');
@@ -103,7 +113,8 @@ class Auth {
     async register(username, password) {
         const response = await fetch('http://localhost:5000/user/register', {
             method: 'POST',
-            body: { username: username, password: password },
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username, password: password }),
 
         })
         if (response.ok) {
@@ -152,7 +163,7 @@ class ProjectManager {
                 
             }
             else {
-                this.events.on('user:retrieve:projects:failed', () => {
+                this.events.emit('user:retrieve:projects:failed', () => {
                     // Code to render message or whatever..
                 })
             }
@@ -162,7 +173,7 @@ class ProjectManager {
 
         })
     }
-    async loadUserProjects() {
+    async loadUserProjects(user) {
         // Loading user projects from DB
     }
 
