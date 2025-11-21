@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
+
 const secret = process.env.JWT_SECRET;
 
 const app = express();
@@ -17,34 +18,14 @@ const projectsCollection = db.collection('projects');
 app.use(cors());
 app.use(express.json()); 
 
-/* 
-async function authToken(req, res, next) {
-  try {
-    const auth = req.headers['authorization'];
-    if (!auth) throw new Error('Authorization header missing');
-    if (typeof(auth) === "string") {
-      const token = auth.split(' ')[1];
-      if (!token) throw new Error('Token missing');
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = decoded;
-      next();
-    }     
-    else {
-      throw new Error('Wrong token')
-    }
-  }
-  catch(err) {
-    res.status(401).json({ error: err.message });
-  }
-}
- */
+
 /*      Default API      */
 app.get('/', (req, res) => {
   res.send('Loaded');
 })
+
 /*      User accessible       */
 app.get('/user/profile', async (req, res) => {
-  
   try {
     if (!req.user) throw new Error("User doesn't own a token");
     const user = (await usersCollection.find().toArray()).filter(t => t.username === req.user.username);
@@ -55,8 +36,10 @@ app.get('/user/profile', async (req, res) => {
     alert('Something went wrong, please try again.');
   }
 })
-app.post('user/token/decrypt', (req, res) => {
+
+app.post('/user/token/decrypt', (req, res) => {
   const token = req.body.token;
+
   try {
     const decoded = jwt.verify(token, secret);
     console.log(decoded);
@@ -64,11 +47,8 @@ app.post('user/token/decrypt', (req, res) => {
 
   }
   catch (err) {
-    err.message = 'TokenExpiredError' ? res.status(400).json(err.message) : res.status(400).json('...')
+    
   }
-  
-  
-  
 })
 
 app.post('/user/login', async(req, res) => {
@@ -117,10 +97,10 @@ app.post('/user/register', async(req, res) => {
 
   res.json({ message: 'Registered and logged in', token, username: user.username });
 })
-app.get('user/projects', async (req, res) => {
+app.get('/user/projects', async (req, res) => {
   if(!req.body) res.status(401).json({message: 'No req body'});
   try {
-    
+    res.status(200).json('sssss');
   }
   catch (error) {
 

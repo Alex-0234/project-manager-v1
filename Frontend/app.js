@@ -1,6 +1,7 @@
 import { SignupWrapper } from '../functions.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    //localStorage.removeItem('token');
     const events = new Emitter();
     const projectManager = new ProjectManager(events);
     const UI = new UIManager(events);
@@ -92,7 +93,9 @@ class Auth {
             this.events.emit('UI:render:signup');
         }
     }
-    async login(username, password, token) {
+    async login(username, password) {
+        if(!password && !token) return;
+
         const response = await fetch('http://localhost:5000/user/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -102,6 +105,7 @@ class Auth {
         if (response.ok) {
             const data = await response.json();
             this.events.emit('user:login:success', data);
+            const { userId, username, token } = data;
             this.data.userId = userId;
             this.data.username = username;
             this.data.token = token;
@@ -157,7 +161,7 @@ class ProjectManager {
             // Logic to render / remove UI;
         });
         this.events.on('user:retrieve:projects', async () => {
-            const response = await fetch('http://localhost:5000/user/projects')
+            const response = await fetch('http://127.0:5000/user/projects')
             if(response.ok) {
                 const data = await response.json();
                 
