@@ -233,7 +233,7 @@ main {
     left: 21%;
     height: 85%;
     width: 78%;
-    overflow: hiddenx;
+    overflow: hidden;
 
     background: transparent;
    }

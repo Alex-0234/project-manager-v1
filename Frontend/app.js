@@ -35,6 +35,12 @@ class Emitter {
             callback(payload);
         }
     }
+    diconnect(event) {
+        if (!this.listeners[event]) return;
+        for (const callback of this.listeners[event]) {
+            this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+        }
+    }
 }
 class Auth {
     constructor(events) {
@@ -44,7 +50,11 @@ class Auth {
             set: (target, prop, value) => {
                 target[prop] = value;
                 if(prop === 'username') {
-                    projectManager.loadUserProjects(value);
+                    this.events.emit('data:change', {
+                        userId: this.data.userId,
+                        username: this.data.username,
+                        token: this.data.token
+                    });
                 }
             }
         });
@@ -52,9 +62,6 @@ class Auth {
         this.loadEvents();
     }
     loadEvents() {
-        this.events.on('data:change', (payload) => {
-            const { userId, username, token } = payload;
-        })
         this.events.on('user:register:attempt', (payload) => {
             const { username, password } = payload;
             this.register(username, password)
@@ -83,7 +90,6 @@ class Auth {
             }); 
             if (response.ok) {
                 const data = await response.json();
-                this.events.emit('data:change', data); // Should count as login after refresh
             }
             else {
                 this.events.emit('UI:render:signup');
@@ -109,6 +115,7 @@ class Auth {
             this.data.userId = userId;
             this.data.username = username;
             this.data.token = token;
+            this.events.diconnect()
         }
         else {
             this.events.emit('user:login:failed');
@@ -123,7 +130,7 @@ class Auth {
         })
         if (response.ok) {
             const data = await response.json();
-            this.events.on('user:register:success', data);
+            this.events.emit('user:register:success', data);
         }
     }
 }
@@ -135,6 +142,7 @@ class UIManager {
         this.loadEvents();
     }
     loadEvents() {
+        
         this.events.on('UI:render:signup', () => {
             const exists = document.querySelector('.signup-wrapper');
             exists && exists.remove();
@@ -142,7 +150,9 @@ class UIManager {
         });
         this.events.on('UI:render:projects', (payload) => {
             // Logic to render / remove UI;
-        })
+        });
+        this.events.on('UI:window', (payload) => {
+            
     }
 
 }
