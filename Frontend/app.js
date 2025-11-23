@@ -151,9 +151,9 @@ class UIManager {
         this.events.on('UI:render:projects', (payload) => {
             // Logic to render / remove UI;
         });
-        this.events.on('UI:window', (payload) => {
+        this.events.on('UI:window', (payload) => { });
             
-    }
+    }   
 
 }
 

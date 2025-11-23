@@ -10,69 +10,99 @@
     --text-color: #EEEFFF;
     --ff: 'Poppins', sans-serif;
 
-    --font-large: clamp(1.2rem, 4vw, 5rem);
+    --font-large: clamp(0.8rem, 4vw, 5rem);
     --font-medium: clamp(1rem, 3vw, 1.5rem);
     --font-small: clamp(0.8rem, 2vw, 1rem);
 }
-/* =========================
-   2. Layout
-   ========================= */
-body {
-    height: 100vh;
-    width: 100vw;
-    margin: 0;
 
-    font-family: var(--ff);
-    font-size: var(--font-small);
 
-    overflow: hidden;
-}
-header {
-    height: 6.5rem;
-    width: 100%;
-    top: 0;
-    margin: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+@layer utility, typography, components, layout;
 
-    background: var(--bg-color);
 
-    z-index: 999;
-}
-.content {
-    height: 100%;
-    width: auto;
-    margin:6.5rem 0 0 0;
-    display: flex;
-}
-aside {
-    height: 100%;
-    width: 20%;
-    margin: 0;
+@layer layout {
 
-    background-image: linear-gradient( var(--bg-color), var(--text-color));
+    body {
+        height: 100svh;
+        margin: 0;
+        font-family: var(--ff);
+        font-size: var(--font-small);
+    }
+    header {
+        height: 4.5rem;
+        width: 100%;
 
-    z-index: 900;
-}
-main {
-    height: auto;
-    width: 80%;
-    margin: 0 0 0 20%;
-    padding-top: 2rem;
-    border-left: solid 5px white;
-    border-top: solid 5px white;
-    display: flex;
-    flex-direction: column;
-    justify-content: start;
-    align-items: center;
-    overflow: hidden;
+        background: var(--bg-color);
+        color: var(--text-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+    }
+    aside {
+        height: 3rem;
+        width: 100%;
+        margin-top: calc(4.5rem - 2px);
 
-    background-image: linear-gradient(
-        60deg,
-        rgba(44, 44, 44, 0.9),
-        rgba(0, 0, 0, 0.9) 100%
-        );
+        background: var(--bg-color);
+        color: var(--text-color);
+    }
+
+ /*    body {
+        height: 100vh;
+        width: 100vw;
+        margin: 0;
+
+        font-family: var(--ff);
+        font-size: var(--font-small);
+
+        overflow: hidden;
+    }
+    header {
+        height: 6.5rem;
+        width: 100%;
+        top: 0;
+        margin: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        background: var(--bg-color);
+
+        z-index: 999;
+    }
+    .content {
+        height: 100%;
+        width: auto;
+        margin:6.5rem 0 0 0;
+        display: flex;
+    }
+    aside {
+        height: 100%;
+        width: 20%;
+        margin-top: calc(6.5rem - 2px);
+
+        background-image: linear-gradient( var(--bg-color), var(--text-color));
+
+        z-index: 900;
+    }
+    main {
+        height: auto;
+        width: 80%;
+        margin: 0 0 0 20%;
+        padding-top: 2rem;
+        border-left: solid 5px white;
+        border-top: solid 5px white;
+        display: flex;
+        flex-direction: column;
+        justify-content: start;
+        align-items: center;
+        overflow: hidden;
+
+        background-image: linear-gradient(
+            60deg,
+            rgba(44, 44, 44, 0.9),
+            rgba(0, 0, 0, 0.9) 100%
+            );
+    } */
 }
 /* =========================
    3. Components
@@ -405,12 +435,12 @@ main {
     grid-row: 4;
    }
 
-/* =========================
-   4. Typography
-   ========================= */
+@layer typography {
+
     header h1 {
      margin: 0;
      color: var(--text-color);
+     margin-top: 1.5rem;
      margin-left: 1.5rem;
      font-size: var(--font-large);
     }
@@ -450,6 +480,7 @@ main {
     .sidebar-project-name.active {
         color: var(--primary-color);
     }
+}
 /* =========================
    5. Visuals / Animation
    ========================= */
