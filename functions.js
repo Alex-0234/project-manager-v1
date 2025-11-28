@@ -32,11 +32,47 @@ export function SignupWrapper(events) {
     const login = createElement('button', 'header-button', 'Log-in');
 
     signup.addEventListener('click', () => {
-        events.emit('UI:window', 'sign-up');
+        events.emit('UI:render:window', 'sign-up');
     })
     login.addEventListener('click', () => {
-        events.emit('UI:window', 'log-in');
+        events.emit('UI:render:window', 'log-in');
     })
     wrapper.append(login, signup);
     document.querySelector('.main-page-user').appendChild(wrapper);
+}
+export function renderWindow(events, type) {
+
+    const modal = createElement('div','signup-modal','',{
+
+    })
+    const emailInput = createElement('input','email-input','',{
+        placeholder: 'Email',
+    })
+    const usernameInput = createElement('input','username-input','',{
+        placeholder: 'Username',
+    })
+    const passwordInput = createElement('input','password-input','',{
+        placeholder: 'Password',
+    })
+    const Submit = createElement('button','signup-button');
+
+    Submit.addEventListener('click', () => {
+        const user = {
+            username: usernameInput.value,
+            email: emailInput.value,
+            password: passwordInput.value
+        }
+        if (type === 'sign-up') {
+            this.events.emit('user:register:attempt', user);
+        }
+        else if (type === 'log-in') {
+            this.events.emit('user:login:attempt', user);
+        }
+        
+    })
+
+    modal.append(usernameInput, emailInput, passwordInput, Submit);
+    document.body.appendChild(modal);
+    
+    return modal;
 }

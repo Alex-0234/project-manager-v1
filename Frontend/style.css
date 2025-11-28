@@ -20,7 +20,6 @@
 
 
 @layer layout {
-
     body {
         height: 100svh;
         margin: 0;
@@ -57,15 +56,47 @@
 
     @media (min-width: 768px) {
         header {
-            height: 4.5rem;
+            height: 5.5rem;
         }
         main {
             
         }
         aside {
             height: 100%;
-            width: 10rem;
+            width: 12rem;
             margin-top: calc(4.5rem - 1px);
+
+            display: flex;
+            flex-direction: column;
+        }
+    }
+    @media (min-width: 1024px) {
+        header {
+            height: 7rem;
+        }
+        main {
+            
+        }
+        aside {
+            height: 100%;
+            width: 14rem;
+            margin-top: calc(7rem - 1px);
+
+            display: flex;
+            flex-direction: column;
+        }
+    }
+    @media (min-width: 1440px) {
+        header {
+            height: 8.5rem;
+        }
+        main {
+            
+        }
+        aside {
+            height: 100%;
+            width: 16rem;
+            margin-top: calc(8.5rem - 1px);
 
             display: flex;
             flex-direction: column;
@@ -120,8 +151,21 @@
     @media (min-width: 768px) {
         .project-list {
             height: 100%;
-            
+            width: 100%;
         }
+        .project-list ul {
+            height: 100%;
+
+            display: flex;
+            flex-direction: column;
+        }
+        .project-list ul li {
+            height: 2.5rem;
+            font-size: var(--font-medium);
+            text-align: center;
+            margin: 0.5rem 0;
+        } 
+
     }
 }
 

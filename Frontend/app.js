@@ -1,4 +1,4 @@
-import { SignupWrapper } from '../functions.js';
+import { SignupWrapper, renderWindow } from '../functions.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     //localStorage.removeItem('token');
@@ -11,10 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     User.init();
 
 })
-
-
-
-
 
 
 
@@ -42,6 +38,7 @@ class Emitter {
         }
     }
 }
+
 class Auth {
     constructor(events) {
         this.events = events;
@@ -63,8 +60,8 @@ class Auth {
     }
     loadEvents() {
         this.events.on('user:register:attempt', (payload) => {
-            const { username, password } = payload;
-            this.register(username, password)
+            const { username, email, password } = payload;
+            this.register(username, email, password)
         })
         this.events.on('user:register:success', () => {
             // Logic to login maybe ??? Could do it in the register event itself..
@@ -73,8 +70,8 @@ class Auth {
             // Like a pop-up message ig.
         })
         this.events.on('user:login:attempt', (payload) => {
-            const { username, password } = payload;
-            this.login(username, password);
+            const { username, email, password } = payload;
+            this.login(username, email, password);
         })
         this.events.on('user:login:failed', () => {
 
@@ -146,12 +143,17 @@ class UIManager {
         this.events.on('UI:render:signup', () => {
             const exists = document.querySelector('.signup-wrapper');
             exists && exists.remove();
+            const header = document.querySelector('header')
             SignupWrapper(this.events);
         });
         this.events.on('UI:render:projects', (payload) => {
             // Logic to render / remove UI;
         });
-        this.events.on('UI:window', (payload) => { });
+        this.events.on('UI:render:window', (payload) => { 
+            this.activeWindow && this.activeWindow.remove();
+            const modal = renderWindow(this.events, payload);
+            this.activeWindow = modal;
+        });
             
     }   
 
