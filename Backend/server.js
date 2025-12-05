@@ -75,7 +75,7 @@ app.post('/user/login', async(req, res) => {
 })
 
 app.post('/user/register', async(req, res) => {
-  const { username, password } = req.body;
+  const { username, email, password } = req.body;
   const used = await usersCollection.findOne({ username });
   if (used) return res.status(400).send('User is already registered');
   const hashed = await bcrypt.hash(password, 10);

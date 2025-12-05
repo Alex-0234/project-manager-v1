@@ -63,10 +63,10 @@ export function renderWindow(events, type) {
             password: passwordInput.value
         }
         if (type === 'sign-up') {
-            this.events.emit('user:register:attempt', user);
+            events.emit('user:register:attempt', user);
         }
         else if (type === 'log-in') {
-            this.events.emit('user:login:attempt', user);
+            events.emit('user:login:attempt', user);
         }
         
     })

@@ -51,7 +51,6 @@
 
         background: var(--bg-color);
         color: var(--text-color);
-
     }
 
     @media (min-width: 768px) {
@@ -87,17 +86,26 @@
         }
     }
     @media (min-width: 1440px) {
+
         header {
+
             height: 8.5rem;
         }
         main {
-            
+            position: absolute;
+            height: calc(100% - 8.5rem);
+            width: calc(100% - 28rem);
+            top: 8.5rem;
+            background: blueviolet;
         }
         aside {
+            position: absolute;
+            right: 0rem;
             height: 100%;
-            width: 16rem;
-            margin-top: calc(8.5rem - 1px);
+            width: 28rem;
+            
 
+            background: var(--bg-color);
             display: flex;
             flex-direction: column;
         }
@@ -115,6 +123,15 @@
         font-size: var(--font-small);
 
         border: none;
+    }
+    .menu-icon {
+        height: 2rem;
+        width: 2rem;
+        margin-right: 1rem;
+        background: red;
+    }
+    .menu-icon:hover {
+        cursor: pointer;
     }
 
     .project-list {
@@ -190,30 +207,7 @@
     text-decoration: none;
 
    }
-   /*       Project button click (not aimed at)        */
-    .sidebar-project-name::after {
-        content: ']';
-        margin-left: 0.5rem;
-        transition: 1s cubic-bezier(0.075, 0.82, 0.165, 1);
-    }
-    .sidebar-project-name::before {
-        content: '[';
-        margin-right: 0.5rem;
-        transition: 1s cubic-bezier(0.075, 0.82, 0.165, 1);
-    }
-    /*       Project button click (aimed at)        */
-    .sidebar-project-name:hover::after {
-        content: ']';
-        margin-left: 0.75rem;
-    }
-    .sidebar-project-name:hover::before {
-        content: '[';
-        margin-right: 0.75rem;
-    }
-    /*       Project button click (clicked at)        */
-    .sidebar-project-name.active {
-        color: var(--primary-color);
-    }
+   
 }
 /* =========================
    5. Visuals / Animation
@@ -230,3 +224,46 @@
         position: fixed;
     }
    
+
+
+    .signup-modal {
+        position: absolute;
+        top: 25%;
+        left: 25%;
+        height: 50%;
+        width: 50%;
+        background: grey;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-items: center;
+        padding: 2rem 0 1rem 0;
+    }
+    .signup-modal>button {
+        height: 2rem;
+        width: 60%;
+    }
+    .signup-modal>input {
+        height: 2rem;
+        width: 60%;
+    }
+
+
+    li {
+        height: auto;
+    }
+
+    .project-link {
+        font-size: 4.5rem;
+        font-family: Poppins;
+        font-weight: 1000;
+        letter-spacing: 8px;
+        line-height: 4rem;
+    }
+    .project-link:hover {
+        filter: brightness(100);
+        cursor: pointer;
+    }
+    .project-link:focus {
+        color: var(--primary-color);
+    }

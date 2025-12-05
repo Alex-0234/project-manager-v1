@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const UI = new UIManager(events);
     const User = new Auth(events);
     
+    const menu = document.querySelector('.meni-icon');
+    menu.addEventListener('click', ()=> {
+        events.emit('UI:project:list');
+    })
 
     User.init();
 
@@ -47,7 +51,7 @@ class Auth {
             set: (target, prop, value) => {
                 target[prop] = value;
                 if(prop === 'username') {
-                    this.events.emit('data:change', {
+                    this.events.emit('user:change', {
                         userId: this.data.userId,
                         username: this.data.username,
                         token: this.data.token
@@ -63,7 +67,15 @@ class Auth {
             const { username, email, password } = payload;
             this.register(username, email, password)
         })
-        this.events.on('user:register:success', () => {
+        this.events.on('user:register:success', (payload) => {
+            const { username, email, password } = payload;
+            if (!email && !username) return;
+            if (!email && username) {
+                this.login(username, password);
+            }
+            else {
+                console.log('Use username pls')
+            }
             // Logic to login maybe ??? Could do it in the register event itself..
         })
         this.events.on('user:register:failed', () => {
@@ -74,6 +86,16 @@ class Auth {
             this.login(username, email, password);
         })
         this.events.on('user:login:failed', () => {
+
+        })
+        this.events.on('user:login:success', ()=> {
+            this.events.diconnect('user:register:success');
+            this.events.diconnect('user:register:attempt');
+            this.events.diconnect('user:register:failed');
+            this.events.diconnect('user:login:attempt');
+            this.events.diconnect('user:login:success');
+        })
+        this.events.on('user:change', ()=> {
 
         })
     }
@@ -96,7 +118,7 @@ class Auth {
             this.events.emit('UI:render:signup');
         }
     }
-    async login(username, password) {
+    async login(username, password, token = null) {
         if(!password && !token) return;
 
         const response = await fetch('http://localhost:5000/user/login', {
@@ -122,8 +144,7 @@ class Auth {
         const response = await fetch('http://localhost:5000/user/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: username, password: password }),
-
+            body: JSON.stringify({ username: username, email: email, password: password }),
         })
         if (response.ok) {
             const data = await response.json();
@@ -139,7 +160,9 @@ class UIManager {
         this.loadEvents();
     }
     loadEvents() {
-        
+        this.events.on('UI:project:list', ()=> {
+            // Render the project list 
+        })   
         this.events.on('UI:render:signup', () => {
             const exists = document.querySelector('.signup-wrapper');
             exists && exists.remove();
