@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const UI = new UIManager(events);
     const User = new Auth(events);
     
-    const menu = document.querySelector('.meni-icon');
+    const menu = document.querySelector('.menu-icon');
     menu.addEventListener('click', ()=> {
         events.emit('UI:project:list');
     })
@@ -35,11 +35,10 @@ class Emitter {
             callback(payload);
         }
     }
-    diconnect(event) {
+    disconnect(event) {
         if (!this.listeners[event]) return;
-        for (const callback of this.listeners[event]) {
-            this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
-        }
+
+        delete this.listeners[event];
     }
 }
 
@@ -109,6 +108,7 @@ class Auth {
             }); 
             if (response.ok) {
                 const data = await response.json();
+                this.events.emit('UI:render:user', data);
             }
             else {
                 this.events.emit('UI:render:signup');
@@ -134,13 +134,13 @@ class Auth {
             this.data.userId = userId;
             this.data.username = username;
             this.data.token = token;
-            this.events.diconnect()
+            
         }
         else {
             this.events.emit('user:login:failed');
         }
     }
-    async register(username, password) {
+    async register(username, email, password) {
         const response = await fetch('http://localhost:5000/user/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -192,8 +192,9 @@ class ProjectManager {
         this.loadEvents();
     }
     loadEvents() {
-        this.events.on('user:register:success', () => {
-            // Logic to render / remove UI;
+        this.events.on('user:register:success', (payload) => {
+            const { username, email, password } = payload;
+            this.login(username, password);
         });
         this.events.on('user:retrieve:projects', async () => {
             const response = await fetch('http://127.0:5000/user/projects')

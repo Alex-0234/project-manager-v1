@@ -48,6 +48,7 @@ export function renderWindow(events, type) {
     const emailInput = createElement('input','email-input','',{
         placeholder: 'Email',
     })
+
     const usernameInput = createElement('input','username-input','',{
         placeholder: 'Username',
     })
@@ -56,22 +57,37 @@ export function renderWindow(events, type) {
     })
     const Submit = createElement('button','signup-button');
 
-    Submit.addEventListener('click', () => {
-        const user = {
-            username: usernameInput.value,
-            email: emailInput.value,
-            password: passwordInput.value
-        }
-        if (type === 'sign-up') {
+    if ( type === 'sign-up') {
+        Submit.addEventListener('click', () => {
+            const user = {
+                username: usernameInput.value,
+                email: emailInput.value,
+                password: passwordInput.value
+            }
             events.emit('user:register:attempt', user);
-        }
-        else if (type === 'log-in') {
+            return;
+        })
+    }
+    else {
+        Submit.addEventListener('click', () => {
+               const user = {
+                username: usernameInput.value,
+                email: null,
+                password: passwordInput.value
+            }
             events.emit('user:login:attempt', user);
-        }
-        
-    })
-
-    modal.append(usernameInput, emailInput, passwordInput, Submit);
+            return;
+        })
+    }
+    
+            
+    if(type === 'sign-up') {
+        modal.append(usernameInput, emailInput, passwordInput, Submit);
+    }
+    else {
+        modal.append(usernameInput, passwordInput, Submit);
+    }
+    
     document.body.appendChild(modal);
     
     return modal;
