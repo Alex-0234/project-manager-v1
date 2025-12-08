@@ -15,6 +15,8 @@ export function createElement(el, className, text = '', attributes = {}) {
 
     return element;
 }
+
+
 export function createElementNS(el, className, attributes = {}) {
     const element = document.createElementNS('http://www.w3.org/2000/svg', el);
     element.classList.add(className);
@@ -26,6 +28,23 @@ export function createElementNS(el, className, attributes = {}) {
     }
     return element;
 }
+
+export function createCloseIcon() {
+    const icon = createElementNS('svg','close-icon',{
+        height: '20px',
+        width: '20px',
+        stroke: 'black',
+        viewbox: '0 0 20 20',
+    });
+    const path = createElementNS('path','close-icon-path',{
+        d: 'M18 6L6 18M6 6l12 12'
+    });
+    icon.appendChild(path);
+    return icon;
+}
+
+
+
 export function SignupWrapper(events) {
     const wrapper = createElement('div', 'signup-wrapper');
     const signup = createElement('button', 'header-button', 'Sign-up');
@@ -40,20 +59,47 @@ export function SignupWrapper(events) {
     wrapper.append(login, signup);
     document.querySelector('.main-page-user').appendChild(wrapper);
 }
+
+export function userWrapper(events) {
+    const wrapper = createElement('div', 'user-wrapper');
+    const profileButton = createElement('button', 'user-wrapper');
+
+    profileButton.addEventListener('click', ()=> {
+        // Redirect to profile
+
+    })
+    wrapper.appendChild(profileButton);
+    document.querySelector('.main-page-user').appendChild(wrapper);
+}
+
+
+
 export function renderWindow(events, type) {
 
     const modal = createElement('div','signup-modal','',{
 
     })
+    const closeIcon = createCloseIcon();
+    closeIcon.addEventListener('click', () => {
+        modal.remove();
+    })
     const emailInput = createElement('input','email-input','',{
         placeholder: 'Email',
+        name: 'email',
+        required: true,
+        
     })
 
     const usernameInput = createElement('input','username-input','',{
         placeholder: 'Username',
+        name: 'username',
+        required: true,
     })
     const passwordInput = createElement('input','password-input','',{
         placeholder: 'Password',
+        name: 'password',
+        required: true,
+
     })
     const Submit = createElement('button','signup-button');
 
@@ -72,20 +118,18 @@ export function renderWindow(events, type) {
         Submit.addEventListener('click', () => {
                const user = {
                 username: usernameInput.value,
-                email: null,
                 password: passwordInput.value
             }
             events.emit('user:login:attempt', user);
             return;
         })
     }
-    
-            
+      
     if(type === 'sign-up') {
-        modal.append(usernameInput, emailInput, passwordInput, Submit);
+        modal.append(closeIcon, usernameInput, emailInput, passwordInput, Submit);
     }
     else {
-        modal.append(usernameInput, passwordInput, Submit);
+        modal.append(closeIcon, usernameInput, passwordInput, Submit);
     }
     
     document.body.appendChild(modal);
