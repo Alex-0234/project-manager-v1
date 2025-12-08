@@ -1,7 +1,31 @@
-import { SignupWrapper, renderWindow } from '../functions.js';
+import { SignupWrapper, renderWindow, userWrapper } from '../functions.js';
 
+
+/*  Make UI / UX using figma so skip for now.
+    Backend - 
+        1. login/register
+            - create token
+            - add user to db (users)
+        2. add/update/delete projects 
+            - add projects to db (projects)
+        3. add/update/delete tasks 
+            - add tasks to db (tasks)
+        4. 
+    Database -
+        1. Create user blueprint
+        2. Create projects blueprint
+        3. Create tasks blueprint
+    
+    Main JS logic -
+        1. Emitter
+        2. Auth
+        3. UI Manager
+        4. Projects Manager
+        5. Tasks 
+
+        */
 document.addEventListener('DOMContentLoaded', () => {
-    //localStorage.removeItem('token');
+
     const events = new Emitter();
     const projectManager = new ProjectManager(events);
     const UI = new UIManager(events);
@@ -12,12 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
         events.emit('UI:project:list');
     })
 
-    User.init();
+    User.checkLoginStatus();
 
 })
-
-
-
 
 
 class Emitter {
@@ -35,6 +56,12 @@ class Emitter {
             callback(payload);
         }
     }
+    off(event, callback) {
+        if (!this.listeners[event]) return; 
+
+        const newListeners = this.listeners[event].filter(cb => cb !== callback);
+        this.listeners[event] = newListeners;
+    }
     disconnect(event) {
         if (!this.listeners[event]) return;
 
@@ -49,13 +76,22 @@ class Auth {
         this.data = new Proxy({userId: null, username: null, token: null}, {
             set: (target, prop, value) => {
                 target[prop] = value;
-                if(prop === 'username') {
-                    this.events.emit('user:change', {
-                        userId: this.data.userId,
-                        username: this.data.username,
-                        token: this.data.token
-                    });
+                switch (prop) {
+                    case 'token':
+                        this.events.emit('user:change', {
+                            userId: target.userId,
+                            username: target.username,
+                            token: target.token
+                        });
+                        break;
+                    case 'userId':
+                        break;
+                    case 'username':
+                        break;
+                    default:
+                        break;
                 }
+                return true;
             }
         });
         console.log(this.data)
@@ -64,47 +100,43 @@ class Auth {
     loadEvents() {
         this.events.on('user:register:attempt', (payload) => {
             const { username, email, password } = payload;
-            this.register(username, email, password)
+            this.register(username, email, password);
         })
         this.events.on('user:register:success', (payload) => {
-            const { username, email, password } = payload;
-            if (!email && !username) return;
-            if (!email && username) {
-                this.login(username, password);
-            }
-            else {
-                console.log('Use username pls')
-            }
-            // Logic to login maybe ??? Could do it in the register event itself..
+            const { userId, username, token } = payload;
+            this.data.userId = userId;
+            this.data.username = username;
+            this.data.token = token;
+            
         })
         this.events.on('user:register:failed', () => {
             // Like a pop-up message ig.
         })
         this.events.on('user:login:attempt', (payload) => {
-            const { username, email, password } = payload;
-            this.login(username, email, password);
+            const { username, password } = payload;
+            this.login(username, password);
         })
         this.events.on('user:login:failed', () => {
 
         })
-        this.events.on('user:login:success', ()=> {
-            this.events.diconnect('user:register:success');
-            this.events.diconnect('user:register:attempt');
-            this.events.diconnect('user:register:failed');
-            this.events.diconnect('user:login:attempt');
-            this.events.diconnect('user:login:success');
+        this.events.on('user:login:success', (payload)=> {
+            const { userId, username, token } = payload;
+            this.data.userId = userId;
+            this.data.username = username;
+            this.data.token = token;
         })
         this.events.on('user:change', ()=> {
-
+            console.log(this.data);
+            this.events.emit('UI:render:user');
         })
     }
-    async init() {
+    async checkLoginStatus() {
         const token = localStorage.getItem('token');
         if (token) {
             const response = await fetch('http://localhost:5000/user/token/decrypt',{
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: token })
+                body: JSON.stringify({ token: token }),
             }); 
             if (response.ok) {
                 const data = await response.json();
@@ -118,23 +150,17 @@ class Auth {
             this.events.emit('UI:render:signup');
         }
     }
-    async login(username, password, token = null) {
-        if(!password && !token) return;
+    async login(username, password) {
 
         const response = await fetch('http://localhost:5000/user/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: username, password: password }),
-
         })
         if (response.ok) {
             const data = await response.json();
+            console.log(data);
             this.events.emit('user:login:success', data);
-            const { userId, username, token } = data;
-            this.data.userId = userId;
-            this.data.username = username;
-            this.data.token = token;
-            
         }
         else {
             this.events.emit('user:login:failed');
@@ -150,6 +176,9 @@ class Auth {
             const data = await response.json();
             this.events.emit('user:register:success', data);
         }
+        else {
+            this.events.emit('user:register:failed');
+        }
     }
 }
 class UIManager {
@@ -163,10 +192,14 @@ class UIManager {
         this.events.on('UI:project:list', ()=> {
             // Render the project list 
         })   
+        this.events.on('UI:render:user', () => {
+            const signupWrapper = document.querySelector('.signup-wrapper');
+            signupWrapper && signupWrapper.remove();
+            userWrapper(this.events);
+        })
         this.events.on('UI:render:signup', () => {
             const exists = document.querySelector('.signup-wrapper');
             exists && exists.remove();
-            const header = document.querySelector('header')
             SignupWrapper(this.events);
         });
         this.events.on('UI:render:projects', (payload) => {
@@ -194,7 +227,6 @@ class ProjectManager {
     loadEvents() {
         this.events.on('user:register:success', (payload) => {
             const { username, email, password } = payload;
-            this.login(username, password);
         });
         this.events.on('user:retrieve:projects', async () => {
             const response = await fetch('http://127.0:5000/user/projects')
@@ -218,150 +250,3 @@ class ProjectManager {
     }
 
 }
-
-
-
-
-
-
-
-/* document.addEventListener('DOMContentLoaded', async () => {
-
-    const headerWrapper = document.querySelector('.main-page-user');
-    const addProjectButton = document.querySelector('.add-project');
-    const token = localStorage.getItem('token');
-
-        if (token) {
-            const decoded = await parseJwt(token);
-            if (decoded.role === "admin") {
-                console.log('Admin')
-                const manager = new ProjectManager(decoded.id);
-                Profile(headerWrapper);
-
-                
-                const admin = document.querySelector('.main-page-user')
-                const link = document.createElement('a');
-                link.setAttribute('href', './admin.html');
-                link.textContent = 'ADMIN';
-                link.style.fontSize = '16px';
-                admin.appendChild(link);
-            }
-            else {
-               console.log('User')
-                const manager = new ProjectManager(decoded.id);
-                Profile(headerWrapper);
-
-            }
-            
-            
-        } else {
-            console.log('User is not logged in');
-            SignupButtons(headerWrapper);
-        }
-
-    
-
-    addProjectButton.addEventListener('click', (e)=> {
-        e.preventDefault();
-        SetupWindow();
-    });
-});
-class ProjectManager {
-    constructor(userid) {
-        this.currentProjects = [];
-        this.userid = userid;
-        this.update(true);
-        
-    }
-    async update() { 
-        const response = await fetch('http://localhost:5000/projects', {
-            headers: {
-                'Authorization': 'Bearer ' + localStorage.getItem('token')
-            }
-        });
-        this.currentProjects = await response.json();
-        this.currentProjects = this.currentProjects.filter(t => t.project.userid === this.userid);
-        this.renderSidebar();
-    } 
-    renderSidebar() {
-        const container = document.querySelector('.project-list');
-        if (this.currentProjects.length >= 1) {
-            this.currentProjects.forEach(t => {
-                const projectName = document.createElement('li');
-                const text = document.createElement('a');
-                text.textContent = `${t.project.name}`;
-                projectName.appendChild(text);
-                projectName.classList.add('sidebar-project')
-                text.classList.add('sidebar-project-name');
-                text.setAttribute('href', '/');
-                
-                text.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (text.classList.contains('active')) {
-                        text.classList.remove('active');
-                        this.removeProject();
-
-                    }
-                    else {
-                        document.querySelectorAll('.sidebar-project-name').forEach(b => b.classList.remove('active'));
-                        text.classList.add('active');
-                        
-                       
-                        this.renderProject(`${t.project.name}`);
-                    }
-                })
-                
-                container.appendChild(projectName);
-            })
-        }
-        
-    }
-    async renderProject(name) {
-        const container = document.querySelector('.active-project');
-        const wrapper = document.createElement('div');
-        const rowBlock = document.createElement('div');
-        const descriptionBlock = document.createElement('div');
-        const nameOutput = document.createElement('output');
-        const descriptionOutput = document.createElement('output');
-        const startDateOutput = document.createElement('output');
-        const dueDateOutput = document.createElement('output');
-        const statusOutput = document.createElement('output');
-
-        Array.from(container.children).forEach(child => {
-            if (child.classList.contains('project')) {
-                child.remove();
-            }
-        })
-        const thisProject = this.currentProjects.filter(t => t.project.name === name);
-
-
-        rowBlock.classList.add('project-row-block');
-        descriptionBlock.classList.add('projects-description-block')
-        wrapper.classList.add('project'); //Temporary class
-        nameOutput.textContent = `${thisProject[0].project.name}`;
-        descriptionOutput.textContent = `${thisProject[0].project.description}`;
-        startDateOutput.textContent = `${thisProject[0].project.startDate}`;
-        dueDateOutput.textContent = `${thisProject[0].project.dueDate}`;
-        statusOutput.textContent = `${thisProject[0].project.status}`;
-
-
-        rowBlock.appendChild(nameOutput);
-        rowBlock.appendChild(startDateOutput);
-        rowBlock.appendChild(dueDateOutput);
-        rowBlock.appendChild(statusOutput);
-        descriptionBlock.appendChild(descriptionOutput);
-        wrapper.appendChild(descriptionBlock)
-        wrapper.appendChild(rowBlock);
-        container.appendChild(wrapper);
-    }
-    removeProject() {
-        const container = document.querySelector('.active-project');
-        const child = container.querySelector('div');
-        if (child) child.remove();
-    }
-} */
-
-
-
-
-
