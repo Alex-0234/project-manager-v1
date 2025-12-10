@@ -1,4 +1,5 @@
 
+import User from './userState.js'
 import Auth from './Auth.js'
 import UIManager from './UIManager.js'
 import ProjectManager from './ProjectManager.js'
@@ -31,14 +32,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const events = new Emitter();
     const projectManager = new ProjectManager(events);
     const UI = new UIManager(events);
-    const User = new Auth(events);
+    const Authentication = new Auth(events);
     
     const menu = document.querySelector('.menu-icon');
     menu.addEventListener('click', ()=> {
         events.emit('UI:mobile:project:list');
     })
 
-    User.checkLoginStatus();
+    Authentication.checkLoginStatus();
 
 })
 
