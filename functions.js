@@ -60,18 +60,30 @@ export function SignupWrapper(events) {
     document.querySelector('.main-page-user').appendChild(wrapper);
 }
 
-export function userWrapper(events) {
+export function userWrapper(events, user) {
     const wrapper = createElement('div', 'user-wrapper');
-    const profileButton = createElement('button', 'user-wrapper');
+    const profileLink = createElement('a', 'user-link',`${user.username}`);
 
-    profileButton.addEventListener('click', ()=> {
+    profileLink.addEventListener('click', ()=> {
         // Redirect to profile
 
     })
-    wrapper.appendChild(profileButton);
+    wrapper.appendChild(profileLink);
     document.querySelector('.main-page-user').appendChild(wrapper);
 }
 
+
+export function mobileViewProjectList(events) {
+    const modal = createElement('div','mobile-project-list-window','',{
+
+    });
+    const projectSlider = createElement('div','mobile-project-list','',{
+
+    })
+    modal.appendChild(projectSlider);
+    document.body.appendChild(modal);
+    return modal;
+}
 
 
 export function renderWindow(events, type) {
@@ -114,6 +126,7 @@ export function renderWindow(events, type) {
             return;
         })
     }
+
     else {
         Submit.addEventListener('click', () => {
                const user = {
