@@ -4,164 +4,158 @@ import { connectDB } from './db.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import { parseJwt } from '../Frontend/parseJwt.js';
+import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
+
+const secret = process.env.JWT_SECRET;
 
 const app = express();
 const db = await connectDB();
 const usersCollection = db.collection('users');
 const projectsCollection = db.collection('projects');
+const tasksCollection = db.collection('tasks');
 
 app.use(cors());
 app.use(express.json()); 
 
 
-async function authToken(req, res, next) {
-  try {
-    const auth = req.headers['authorization'];
-    if (!auth) throw new Error('Authorization header missing');
-    if (typeof(auth) === "string") {
-      const token = auth.split(' ')[1];
-      if (!token) throw new Error('Token missing');
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = decoded;
-      next();
-    }     
-    else {
-      throw new Error('Wrong token')
-    }
+class ValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'ValidationError';
   }
-  catch(err) {
-    res.status(401).json({ error: err.message });
+}
+class DatabaseError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'DatabaseError';
   }
 }
 
-/*      Default API      */
+  async function setAuthCookies(res, user) {
+
+  const token = jwt.sign({ userId: user.userId, username: user.username }, process.env.JWT_SECRET, {
+    expiresIn: '1d'
+  })
+  res.cookie('jwt_auth', token, {
+    httpOnly: true,    
+    secure: process.env.NODE_ENV === 'production', 
+    sameSite: 'strict',  
+    maxAge: 24 * 60 * 60 * 1000 
+  });
+  return token;
+}
+
+function isLoggedIn(req, res, next) {
+  const auth = req.headers['authorization'];
+  console.log(auth);
+
+  next();
+}
+
+
+
+
+
+
+
 app.get('/', (req, res) => {
-  res.send('Loaded');
-})
-/*      User accessible       */
-app.get('/profile', authToken, async (req, res) => {
-  try {
-    if (!req.user) throw new Error("User doesn't own a token");
-    const user = (await usersCollection.find().toArray()).filter(t => t.username === req.user.username);
-    res.json(user);
-  } 
-  catch (err) {
-    console.error('Failed to fetch profile:', err.message);
-    alert('Something went wrong, please try again.');
-  }
+  res.send('Server is running');
 })
 
-app.post('/users/login', async(req, res) => {
-  try {
+// User Routes
+
+  app.post('/user/login', async(req, res) => {
     const { username, password } = req.body;
-    const user = await usersCollection.findOne({ username });
-    if (!user) return res.status(400).send('"Invalid username or password"');
+    console.log('1',username)
+    console.log('2',password)
+    if (!username || !password ) throw new ValidationError('Incorrect username or password');
+
+  try {
+    const user = await usersCollection.findOne({ username: username });
+    console.log('3',user)
+    if (!user) throw new DatabaseError('Incorrect username or password');
 
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(400).send('"Invalid username or password"');
+    console.log('4',valid)
+    if (!valid) throw new DatabaseError('Incorrect username or password');
 
-    const token = jwt.sign(
-      { id: user._id, username: user.username, role: user.role  },
-      process.env.JWT_SECRET,
-      { expiresIn: '3h' }
-    );
+    const token = await setAuthCookies(res, user);
+    console.log(token);
+    res.json( token );
 
-    res.send({ message: 'Logged in', token, username: user.username });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-})
-
-app.post('/users/register', async(req, res) => {
-  const { username, email, password } = req.body;
-  const used = await usersCollection.findOne({ username });
-  if (used) return res.status(400).send('User is already registered');
-  const hashed = await bcrypt.hash(password, 10);
-  const user = {
-    username: username,
-    email: email,
-    password: hashed,
-    role: "user"
-  }
-  const response = await usersCollection.insertOne(user);
-
-  const token = jwt.sign(
-    { id: user._id, username: user.username, role: user.role  },
-    process.env.JWT_SECRET,
-    { expiresIn: '3h' }
-  );
-
-
-
-  res.json({ message: 'Registered and logged in', token, username: user.username });
-})
-
-
-/*       Not freely accessible       */
-app.get('/users', authToken, async(req, res) => {
-  try {
-    if (req.user.role === 'admin') {
-      const users = await usersCollection.find({}, { projection: { password: 0 } }).toArray();
-      res.status(400).json(users);
-      next();
+    if (err instanceof ValidationError) { 
+      return res.status(400).json({ error: err.message }); 
+    }
+    if (err instanceof DatabaseError) { 
+      return res.status(400).json({ error: err.message });
     }
     else {
-      throw new Error('Unauthorized')
+      return res.status(500).send('Internal Server Error');
     }
   }
-  catch(err) {
-    res.status(401).json({error: `${err.message}`})
-  }
-  
+  })
 
-})
-app.route('/projects')
-.get(authToken, async(req, res) => {
-  const projects = await projectsCollection.find().toArray();
-  res.send(projects);
-})
-.post(authToken, async(req, res) => {
-    const { name, description, status, dueDate, token } = req.body;
-    const startDate = new Date;
-    const formatted = startDate.toISOString().split('T')[0];
-    const project = {
-      userid: req.user.id,
-      name: name,
-      description: description,
-      status: status,
-      startDate: formatted,
-      dueDate: dueDate
+  app.post('/user/register', async(req, res) => {
+  const { username, email, password } = req.body;
+
+  try {
+    const usernameUsed = await usersCollection.findOne({ username: username });
+    if (usernameUsed) throw new ValidationError('Username is already used.')
+    
+    const hashed = await bcrypt.hash(password, 10);
+    const userId = uuidv4();
+    const user = {
+      userId: userId, 
+      username: username,
+      email: email,
+      password: hashed,
     }
-    await projectsCollection.insertOne({project});
-    res.status(201).send('Succesfully added a project')
+    await usersCollection.insertOne(user);
+    res.status(201).json({ message: 'Registered and logged in', userId: user.userId, token: token, username: user.username }); 
+    
+  }
+  catch (err) {
+    if (err instanceof ValidationError) { 
+      return res.status(400).json({ error: err.message });
+    }
+    if (err instanceof DatabaseError) { 
+      return res.status(400).json({ error: err.message });
+    }
+    else {
+      return res.status(500).send('Internal Server Error');
+    }
+  }
+  })
 
-})
+/*   app.get('user/projects', isLoggedIn, async (req, res) => {
+    res.json('Invalid')
+      //const response = await projectsCollection.find({userId: }) 
+  }) */
 
 
-/*       Routing for admin      */
-app.get('/users/:username', authToken, async (req, res) => {
-      
-          const username = req.params.username;
-          console.log(req.headers);
-          const token = req.headers['authorization'].split(' ')[1];
-          const decoded = jwt.verify(token, process.env.JWT_SECRET);
-          if (decoded.role === 'admin') {
-            try {
-              const users = await usersCollection.find().toArray();
-              const user = users.filter(t => t.username === username);
-              res.status(401).send(`${user}`);
-              } 
-            catch {
-                console.log('You are not an admin')
-            }
-          }
-         
-      
-})
+  app.get('/user/profile', async (req, res) => {
+
+  })
+
+
+  app.post('/user/token/decrypt', (req, res) => {
+  const token = req.body.token;
+
+  try {
+    const decoded = jwt.verify(token, secret);
+    console.log(decoded);
+    res.status(200).json(decoded);
+
+  }
+  catch (err) {
+    
+  }
+  })
+
+
 
 
 app.listen(5000, () => console.log("✅ Backend running on http://localhost:5000"));
