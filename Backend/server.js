@@ -33,8 +33,9 @@ class DatabaseError extends Error {
   }
 }
 
-function setAuthCookies(res, userId) {
-  const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+  async function setAuthCookies(res, user) {
+
+  const token = jwt.sign({ userId: user.userId, username: user.username }, process.env.JWT_SECRET, {
     expiresIn: '1d'
   })
   res.cookie('jwt_auth', token, {
@@ -46,6 +47,19 @@ function setAuthCookies(res, userId) {
   return token;
 }
 
+function isLoggedIn(req, res, next) {
+  const auth = req.headers['authorization'];
+  console.log(auth);
+
+  next();
+}
+
+
+
+
+
+
+
 app.get('/', (req, res) => {
   res.send('Server is running');
 })
@@ -54,20 +68,22 @@ app.get('/', (req, res) => {
 
   app.post('/user/login', async(req, res) => {
     const { username, password } = req.body;
-    console.log(username)
-    console.log(password)
+    console.log('1',username)
+    console.log('2',password)
     if (!username || !password ) throw new ValidationError('Incorrect username or password');
 
   try {
     const user = await usersCollection.findOne({ username: username });
+    console.log('3',user)
     if (!user) throw new DatabaseError('Incorrect username or password');
 
     const valid = await bcrypt.compare(password, user.password);
+    console.log('4',valid)
     if (!valid) throw new DatabaseError('Incorrect username or password');
 
-    const token = setAuthCookies(res, user.userId);
-
-    res.send({ message: 'Logged in', userId: user.userId, token: token, username: user.username });
+    const token = await setAuthCookies(res, user);
+    console.log(token);
+    res.json( token );
 
   } catch (err) {
     if (err instanceof ValidationError) { 
@@ -96,10 +112,8 @@ app.get('/', (req, res) => {
       username: username,
       email: email,
       password: hashed,
-      role: "user"
     }
     await usersCollection.insertOne(user);
-    const token = setAuthCookies(res, user.userId);
     res.status(201).json({ message: 'Registered and logged in', userId: user.userId, token: token, username: user.username }); 
     
   }
@@ -116,9 +130,14 @@ app.get('/', (req, res) => {
   }
   })
 
+/*   app.get('user/projects', isLoggedIn, async (req, res) => {
+    res.json('Invalid')
+      //const response = await projectsCollection.find({userId: }) 
+  }) */
+
 
   app.get('/user/profile', async (req, res) => {
-  
+
   })
 
 
@@ -136,9 +155,6 @@ app.get('/', (req, res) => {
   }
   })
 
-app.get('/user/projects', async (req, res) => {
-  
-})
 
 
 
