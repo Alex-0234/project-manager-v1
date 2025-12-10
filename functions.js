@@ -16,7 +16,6 @@ export function createElement(el, className, text = '', attributes = {}) {
     return element;
 }
 
-
 export function createElementNS(el, className, attributes = {}) {
     const element = document.createElementNS('http://www.w3.org/2000/svg', el);
     element.classList.add(className);
@@ -43,8 +42,6 @@ export function createCloseIcon() {
     return icon;
 }
 
-
-
 export function SignupWrapper(events) {
     const wrapper = createElement('div', 'signup-wrapper');
     const signup = createElement('button', 'header-button', 'Sign-up');
@@ -67,11 +64,10 @@ export function userWrapper(events, user) {
     profileLink.addEventListener('click', ()=> {
         // Redirect to profile
 
-    })
+    });
     wrapper.appendChild(profileLink);
     document.querySelector('.main-page-user').appendChild(wrapper);
 }
-
 
 export function mobileViewProjectList(events) {
     const modal = createElement('div','mobile-project-list-window','',{
@@ -84,7 +80,6 @@ export function mobileViewProjectList(events) {
     document.body.appendChild(modal);
     return modal;
 }
-
 
 export function renderWindow(events, type) {
 
