@@ -1,31 +1,11 @@
 
+import User from './userState.js'
+import { jwtDecode } from './node_modules/jwt-decode/build/esm/index.js'
 
-class Auth {
+export default class Auth {
     constructor(events) {
         this.events = events;
 
-        this.data = new Proxy({userId: null, username: null, token: null}, {
-            set: (target, prop, value) => {
-                target[prop] = value;
-                switch (prop) {
-                    case 'token':
-                        this.events.emit('user:change', {
-                            userId: target.userId,
-                            username: target.username,
-                            token: target.token
-                        });
-                        break;
-                    case 'userId':
-                        break;
-                    case 'username':
-                        break;
-                    default:
-                        break;
-                }
-                return true;
-            }
-        });
-        console.log(this.data)
         this.loadEvents();
     }
     loadEvents() {
@@ -33,12 +13,8 @@ class Auth {
             const { username, email, password } = payload;
             this.register(username, email, password);
         })
-        this.events.on('user:register:success', (payload) => {
-            const { userId, username, token } = payload;
-            this.data.userId = userId;
-            this.data.username = username;
-            this.data.token = token;
-            
+        this.events.on('user:register:success', () => {
+            console.log('Registration successful');
         })
         this.events.on('user:register:failed', () => {
             // Like a pop-up message ig.
@@ -51,18 +27,21 @@ class Auth {
 
         })
         this.events.on('user:login:success', (payload)=> {
-            const { userId, username, token } = payload;
-            this.data.userId = userId;
-            this.data.username = username;
-            this.data.token = token;
-        })
-        this.events.on('user:change', (data)=> {
-            console.log(this.data);
-            this.events.emit('UI:render:user', data);
+            const token = payload;
+            const decoded = jwtDecode(token);
+
+            User.userId = decoded.userId;
+            User.username = decoded.username;
+            User.token = token;
+
+            this.events.emit('UI:render:user');
+            //this.events.emit('');
+
+
         })
     }
     async checkLoginStatus() {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('');
         if (token) {
             const response = await fetch('http://localhost:5000/user/token/decrypt',{
                 method: 'POST',
@@ -71,7 +50,7 @@ class Auth {
             }); 
             if (response.ok) {
                 const data = await response.json();
-                this.events.emit('UI:render:user', data);
+                this.events.emit('UI:render:user');
             }
             else {
                 this.events.emit('UI:render:signup');
@@ -90,7 +69,6 @@ class Auth {
         })
         if (response.ok) {
             const data = await response.json();
-            console.log(data);
             this.events.emit('user:login:success', data);
         }
         else {
@@ -105,7 +83,7 @@ class Auth {
         })
         if (response.ok) {
             const data = await response.json();
-            this.events.emit('user:register:success', data);
+            this.events.emit('user:register:success');
         }
         else {
             this.events.emit('user:register:failed');

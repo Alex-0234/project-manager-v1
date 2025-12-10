@@ -1,7 +1,7 @@
 
 
 
-export class TaskManager {
+export default class TaskManager {
     constructor(events, project, user) {
         this.project = project;
         this.user = user;

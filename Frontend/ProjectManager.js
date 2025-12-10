@@ -1,17 +1,9 @@
 
+import User from './userState.js'
 
-export class ProjectManager {
-    constructor(events, user) {
+export default class ProjectManager {
+    constructor(events) {
         this.events = events;
-        this.user = new Proxy({userId: null},{
-            set: (target, prop, value) => {
-                target[prop] = value;
-                this.events.emit('request:user:projects', prop);
-                return true;
-            }
-            
-        }
-        )
         this.AllProjects = [];
         this.view = 'table';
 
