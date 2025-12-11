@@ -33,6 +33,7 @@ export default class Auth {
             User.userId = decoded.userId;
             User.username = decoded.username;
             User.token = token;
+            User.isLoggedIn = true;
 
             this.events.emit('UI:render:user');
             //this.events.emit('');

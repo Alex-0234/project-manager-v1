@@ -1,6 +1,6 @@
 
 import User from './userState.js'
-import { SignupWrapper, renderWindow, userWrapper, mobileViewProjectList } from '../functions.js';
+import { SignupWrapper, renderWindow, userWrapper, mobileViewProjectList } from '../Frontend/functions.js';
 
 export default class UIManager {
     constructor(events) {
@@ -11,16 +11,15 @@ export default class UIManager {
     }
     loadEvents() {
         this.events.on('UI:mobile:project:list', ()=> {
-            // Render the project list
-            //console.log('1',this.activeWindow);
+                    this.events.emit('request:user:projects'); // update to load after login
             if (this.activeWindow) {
                 this.activeWindow.remove();
                 this.activeWindow = null;
-                //console.log('2',this.activeWindow);
+                this.activeWindow = mobileViewProjectList();
             }
             else {
                 this.activeWindow = mobileViewProjectList();
-                //console.log('3',this.activeWindow);
+                
             }
            
         })   

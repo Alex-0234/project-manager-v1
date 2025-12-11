@@ -1,6 +1,6 @@
+import eventEmitter from "./EventBus.js";
 
-
-let User = new Proxy({userId: null, username: null, token: null }, {
+let User = new Proxy({userId: null, username: null, token: null, isLoggedIn: false}, {
     set: (target, key, value) => {
         console.log(`[Proxy] Setting property: ${key} to ${value}`);
         target[key] = value;
@@ -8,9 +8,15 @@ let User = new Proxy({userId: null, username: null, token: null }, {
             case 'token': {
                 localStorage.setItem('token', value);
             }
+            case 'isLoggedIn': {
+                if ( value === true) {
+                    eventEmitter.emit('request:user:projects');
+                }
+            }
 
         }
         return true;
     }    
 })
+
 export default User;
