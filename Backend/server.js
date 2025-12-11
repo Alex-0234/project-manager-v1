@@ -34,6 +34,7 @@ class DatabaseError extends Error {
 }
 
   async function setAuthCookies(res, user) {
+
   const token = jwt.sign({ userId: user.userId, username: user.username }, process.env.JWT_SECRET, {
     expiresIn: '1d'
   })
