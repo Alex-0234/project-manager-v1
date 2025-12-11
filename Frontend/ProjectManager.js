@@ -36,5 +36,5 @@ export default class ProjectManager {
         // Loading user projects from DB
 
     }
-
+    
 }

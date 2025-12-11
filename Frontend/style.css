@@ -13,6 +13,8 @@
     --font-large: clamp(1rem, 4vw, 5rem);
     --font-medium: clamp(1rem, 3vw, 1.5rem);
     --font-small: clamp(0.8rem, 2vw, 1rem);
+
+    --mobile-header: 2.5rem;
 }
 
 
@@ -27,14 +29,13 @@
         font-size: var(--font-small);
     }
     header {
-        height: 3.5rem;
+        height: var(--mobile-header);
         width: 100%;
-
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
         background: var(--bg-color);
         color: var(--text-color);
-        display: flex;
-        justify-content: space-between;
-        align-items: start;
     }
     main {
 
@@ -42,7 +43,7 @@
     aside {
         height: 3rem;
         width: 100%;
-        margin-top: calc(3.5rem - 2px);
+        margin-top: calc(var(--mobile-header) - 2px);
 
         display: flex;
         justify-content: space-between;
@@ -52,67 +53,24 @@
         background: var(--bg-color);
         color: var(--text-color);
     }
-
-    @media (min-width: 768px) {
-        header {
-            height: 5.5rem;
-        }
-        main {
-            
-        }
-        aside {
-            height: 100%;
-            width: 12rem;
-            margin-top: calc(4.5rem - 1px);
-
-            display: flex;
-            flex-direction: column;
-        }
-    }
-    @media (min-width: 1024px) {
-        header {
-            height: 7rem;
-        }
-        main {
-            
-        }
-        aside {
-            height: 100%;
-            width: 14rem;
-            margin-top: calc(7rem - 1px);
-
-            display: flex;
-            flex-direction: column;
-        }
-    }
-    @media (min-width: 1440px) {
-
-        header {
-
-            height: 8.5rem;
-        }
-        main {
-            position: absolute;
-            height: calc(100% - 8.5rem);
-            width: calc(100% - 28rem);
-            top: 8.5rem;
-            background: blueviolet;
-        }
-        aside {
-            position: absolute;
-            right: 0rem;
-            height: 100%;
-            width: 28rem;
-            
-
-            background: var(--bg-color);
-            display: flex;
-            flex-direction: column;
-        }
-    }
 }
 @layer components {
 
+    .main-page-user {
+        height: 100%;
+        width: 40%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .user-wrapper {
+        height: 1.5rem;
+        width: 6rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        
+    }
     .add-project {
         height: 2rem;
         width: auto;
@@ -132,6 +90,13 @@
     }
     .menu-icon:hover {
         cursor: pointer;
+    }
+    .mobile-project-list-window {
+        position: absolute;
+        width: 100%;
+        height: 6rem;
+        top: calc( var(--mobile-header));
+        background: #232323;
     }
 
     .project-list {
@@ -164,26 +129,7 @@
         margin-left: 2rem;
         margin-right: 2rem;
         
-    }
-    @media (min-width: 768px) {
-        .project-list {
-            height: 100%;
-            width: 100%;
-        }
-        .project-list ul {
-            height: 100%;
-
-            display: flex;
-            flex-direction: column;
-        }
-        .project-list ul li {
-            height: 2.5rem;
-            font-size: var(--font-medium);
-            text-align: center;
-            margin: 0.5rem 0;
-        } 
-
-    }
+    } 
 }
 
 @layer typography {
@@ -191,8 +137,6 @@
     header h1 {
      margin: 0;
      color: var(--text-color);
-     margin-top: 0.8rem;
-     margin-left: 1.5rem;
      font-size: var(--font-large);
     }
 
@@ -223,7 +167,9 @@
     .fixed {
         position: fixed;
     }
-   
+   .invisible {
+    visibility: hidden;
+   }
 
 
     .signup-modal {

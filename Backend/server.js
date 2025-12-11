@@ -86,7 +86,6 @@ app.get('/', (req, res) => {
     if (!valid) throw new DatabaseError('Incorrect username or password');
 
     const token = await setAuthCookies(res, user);
-    console.log(token);
     res.json( token );
 
   } catch (err) {

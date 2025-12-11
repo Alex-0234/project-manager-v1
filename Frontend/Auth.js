@@ -42,20 +42,9 @@ export default class Auth {
         })
     }
     async checkLoginStatus() {
-        const token = localStorage.getItem('');
+        const token = localStorage.getItem('token');
         if (token) {
-            const response = await fetch('http://localhost:5000/user/token/decrypt',{
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: token }),
-            }); 
-            if (response.ok) {
-                const data = await response.json();
-                this.events.emit('UI:render:user');
-            }
-            else {
-                this.events.emit('UI:render:signup');
-            }
+            this.events.emit('user:login:success', token);
         }
         else {
             this.events.emit('UI:render:signup');
@@ -69,8 +58,8 @@ export default class Auth {
             body: JSON.stringify({ username: username, password: password }),
         })
         if (response.ok) {
-            const data = await response.json();
-            this.events.emit('user:login:success', data);
+            const token = await response.json();
+            this.events.emit('user:login:success', token);
         }
         else {
             this.events.emit('user:login:failed');

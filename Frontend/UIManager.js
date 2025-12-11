@@ -11,7 +11,6 @@ export default class UIManager {
     }
     loadEvents() {
         this.events.on('UI:mobile:project:list', ()=> {
-                    this.events.emit('request:user:projects'); // update to load after login
             if (this.activeWindow) {
                 this.activeWindow.remove();
                 this.activeWindow = null;
