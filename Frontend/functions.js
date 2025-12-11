@@ -129,6 +129,7 @@ export function renderWindow(events, type) {
                 password: passwordInput.value
             }
             events.emit('user:login:attempt', user);
+            modal.remove();
             return;
         })
     }
