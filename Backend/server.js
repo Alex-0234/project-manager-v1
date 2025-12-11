@@ -49,8 +49,12 @@ class DatabaseError extends Error {
 
 function isLoggedIn(req, res, next) {
   const auth = req.headers['authorization'];
-  console.log(auth);
-
+  const arr = auth.trim().split(' ')
+  const valid = jwt.verify(arr[1],process.env.JWT_SECRET);
+  console.log(valid)
+  if (valid) {
+     req.userId = valid.userId;
+  }
   next();
 }
 
@@ -68,17 +72,17 @@ app.get('/', (req, res) => {
 
   app.post('/user/login', async(req, res) => {
     const { username, password } = req.body;
-    console.log('1',username)
-    console.log('2',password)
+    //console.log('1',username)
+    //console.log('2',password)
     if (!username || !password ) throw new ValidationError('Incorrect username or password');
 
   try {
     const user = await usersCollection.findOne({ username: username });
-    console.log('3',user)
+    //console.log('3',user)
     if (!user) throw new DatabaseError('Incorrect username or password');
 
     const valid = await bcrypt.compare(password, user.password);
-    console.log('4',valid)
+    //console.log('4',valid)
     if (!valid) throw new DatabaseError('Incorrect username or password');
 
     const token = await setAuthCookies(res, user);
@@ -86,16 +90,16 @@ app.get('/', (req, res) => {
     res.json( token );
 
   } catch (err) {
-    if (err instanceof ValidationError) { 
-      return res.status(400).json({ error: err.message }); 
+      if (err instanceof ValidationError) { 
+        return res.status(400).json({ error: err.message }); 
+      }
+      if (err instanceof DatabaseError) { 
+        return res.status(400).json({ error: err.message });
+      }
+      else {
+        return res.status(500).send('Internal Server Error');
+      }
     }
-    if (err instanceof DatabaseError) { 
-      return res.status(400).json({ error: err.message });
-    }
-    else {
-      return res.status(500).send('Internal Server Error');
-    }
-  }
   })
 
   app.post('/user/register', async(req, res) => {
@@ -130,10 +134,33 @@ app.get('/', (req, res) => {
   }
   })
 
-/*   app.get('user/projects', isLoggedIn, async (req, res) => {
-    res.json('Invalid')
-      //const response = await projectsCollection.find({userId: }) 
-  }) */
+  app.get('/user/projects', isLoggedIn, async (req, res) => {
+    const userId = req.userId;
+    try {
+      if (!userId) throw new ValidationError('Invalid User Token!');
+
+      const projects = await projectsCollection.find({$or: [{userId: req.userId}, {memberIds: req.userId }]}).toArray();;
+      if (projects.length === 0 ) {
+        return res.status(200).json([]);
+      }
+      
+      console.log('data',projects);
+      res.status(200).json(projects);
+    }
+    catch (err) {
+      console.error("CRASH PREVENTED:", err);
+      
+      if (err instanceof ValidationError) { 
+        return res.status(400).json({ error: err.message });
+      }
+      if (err instanceof DatabaseError) { 
+        return res.status(400).json({ error: err.message });
+      }
+      else {
+        return res.status(500).send('Internal Server Error');
+      }
+    }
+  }) 
 
 
   app.get('/user/profile', async (req, res) => {
