@@ -62,7 +62,7 @@ export function userWrapper(events, user) {
     const profileLink = createElement('a', 'user-link',`${user.username}`);
 
     profileLink.addEventListener('click', ()=> {
-        // Redirect to profile
+        document.querySelector('.user-options').classList.toggle('invisible')
 
     });
     wrapper.appendChild(profileLink);
@@ -84,7 +84,6 @@ export function mobileViewProjectList(events) {
 export function renderWindow(events, type) {
 
     const modal = createElement('div','signup-modal','',{
-
     })
     const closeIcon = createCloseIcon();
     closeIcon.addEventListener('click', () => {
@@ -93,10 +92,8 @@ export function renderWindow(events, type) {
     const emailInput = createElement('input','email-input','',{
         placeholder: 'Email',
         name: 'email',
-        required: true,
-        
+        required: true, 
     })
-
     const usernameInput = createElement('input','username-input','',{
         placeholder: 'Username',
         name: 'username',
@@ -121,7 +118,6 @@ export function renderWindow(events, type) {
             return;
         })
     }
-
     else {
         Submit.addEventListener('click', () => {
                const user = {
@@ -133,15 +129,19 @@ export function renderWindow(events, type) {
             return;
         })
     }
-      
     if(type === 'sign-up') {
         modal.append(closeIcon, usernameInput, emailInput, passwordInput, Submit);
     }
     else {
         modal.append(closeIcon, usernameInput, passwordInput, Submit);
     }
-    
     document.body.appendChild(modal);
-    
     return modal;
+}
+
+
+export async function renderProjectSetupWindow() {
+    const modal = createElement();
+    const projectName = createElement();
+    
 }

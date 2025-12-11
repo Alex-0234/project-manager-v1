@@ -117,7 +117,7 @@ app.get('/', (req, res) => {
       password: hashed,
     }
     await usersCollection.insertOne(user);
-    res.status(201).json({ message: 'Registered and logged in', userId: user.userId, token: token, username: user.username }); 
+    res.status(201).json({ message: 'Registered and logged in', userId: user.userId, username: user.username }); 
     
   }
   catch (err) {
@@ -138,7 +138,7 @@ app.get('/', (req, res) => {
     try {
       if (!userId) throw new ValidationError('Invalid User Token!');
 
-      const projects = await projectsCollection.find({$or: [{userId: req.userId}, {memberIds: req.userId }]}).toArray();;
+      const projects = await projectsCollection.find({$or: [{admins: req.userId}, {members: req.userId }]}).toArray();
       if (projects.length === 0 ) {
         return res.status(200).json([]);
       }
