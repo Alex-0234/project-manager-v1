@@ -8,9 +8,9 @@ import TasksManager from './TasksManager.js'
 document.addEventListener('DOMContentLoaded', () => {
     
 
-    const projectManager = new ProjectManager(eventEmitter);
-    const UI = new UIManager(eventEmitter);
-    const Authentication = new Auth(eventEmitter);
+    const projectManager = new ProjectManager();
+    const UI = new UIManager();
+    const Authentication = new Auth();
     
     const menu = document.querySelector('.menu-icon');
     menu.addEventListener('click', ()=> {
