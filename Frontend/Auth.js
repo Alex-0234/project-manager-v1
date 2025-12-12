@@ -1,10 +1,11 @@
 
 import User from './userState.js'
 import { jwtDecode } from './node_modules/jwt-decode/build/esm/index.js'
+import eventEmitter from './EventBus.js';
 
 export default class Auth {
     constructor(events) {
-        this.events = events;
+        this.events = eventEmitter;
 
         this.loadEvents();
     }

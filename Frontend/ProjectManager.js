@@ -1,9 +1,10 @@
 
 import User from './userState.js'
+import eventEmitter from './EventBus.js'
 
 export default class ProjectManager {
-    constructor(events) {
-        this.events = events;
+    constructor() {
+        this.events = eventEmitter;
         this.Projects = [];
         this.view = 'table';
 

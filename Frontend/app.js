@@ -7,7 +7,7 @@ import TasksManager from './TasksManager.js'
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    
+
     const projectManager = new ProjectManager(eventEmitter);
     const UI = new UIManager(eventEmitter);
     const Authentication = new Auth(eventEmitter);
@@ -16,7 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     menu.addEventListener('click', ()=> {
         const projectMenu = document.querySelector('.mobile-project-list-window').classList.toggle('invisible');
     })
-
+    const addProject = document.querySelector('.add-project');
+    addProject.addEventListener('click', () => {
+        //eventEmitter.emit('UI:open:project:setup')
+    })
+    
     Authentication.checkLoginStatus();
 
 })

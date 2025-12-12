@@ -1,10 +1,11 @@
 
 import User from './userState.js'
-import { SignupWrapper, renderWindow, userWrapper, mobileViewProjectList } from '../Frontend/functions.js';
+import { SignupWrapper, renderWindow, userWrapper, mobileViewProjectList } from './components.js';
+import eventEmitter from './EventBus.js';
 
 export default class UIManager {
-    constructor(events) {
-        this.events = events;
+    constructor() {
+        this.events = eventEmitter;
         this.activeWindow = null;
 
         this.loadEvents();

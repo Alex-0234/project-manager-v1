@@ -1,6 +1,13 @@
 import eventEmitter from "./EventBus.js";
 
-let User = new Proxy({userId: null, username: null, token: null, isLoggedIn: false}, {
+let User = new Proxy({
+    userId: null, 
+    username: null, 
+    token: null, 
+    isLoggedIn: false,
+    colorPreference: null,
+
+    }, {
     set: (target, key, value) => {
         console.log(`[Proxy] Setting property: ${key} to ${value}`);
         target[key] = value;
