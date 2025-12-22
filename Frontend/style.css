@@ -56,7 +56,22 @@
     }
 }
 @layer components {
-
+    .project-setup-modal {
+        position: absolute;
+        top: 20%;
+        left: 20%;
+        height: 60%;
+        width: 60%;
+        background: #232323;
+        border: solid 1px white;
+        border-radius: 0.4rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        gap: 1rem;
+    }
     .main-page-user {
         height: 100%;
         width: 40%;
@@ -130,45 +145,30 @@
     .menu-icon:hover {
         cursor: pointer;
     }
-    .mobile-project-list-window {
+    .project-list {
         position: absolute;
-        width: 100%;
+        min-width: 100%;
+        width: auto;
         height: 6rem;
         top: calc( var(--mobile-header));
+        display: flex;
+        overflow-y: hidden;
+        overflow-x: auto;
         background: #232323;
     }
-
-    .project-list {
-        height: 2.2rem;
-        width: 60%;
-        margin-right: 1rem;
-        padding: 0;
-
-        overflow: hidden;
-
-    }
-    .project-list ul {
-        height: 100%;
-        width: auto;
-        margin: 0;
-        padding: 0;
-
+    .project {
+        height: 4rem;
+        width: 6rem;
+        margin: 0.5rem;
+        padding: 0.5rem;
+        border-radius: 0.4rem;
         
-        list-style: none;
 
-        display: flex;
-        flex-direction: row;
+        font-size: var(--font-medium);
 
-        overflow-x: auto;
-
+        border: solid 1px white;
+        color: var(--text-color);
     }
-    .project-list ul li {
-        height: 100%;
-        font-size: var(--font-large);
-        margin-left: 2rem;
-        margin-right: 2rem;
-        
-    } 
 }
 
 @layer typography {

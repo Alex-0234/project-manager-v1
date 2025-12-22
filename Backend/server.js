@@ -50,12 +50,16 @@ class DatabaseError extends Error {
 function isLoggedIn(req, res, next) {
   const auth = req.headers['authorization'];
   const arr = auth.trim().split(' ')
-  const valid = jwt.verify(arr[1],process.env.JWT_SECRET);
-  console.log(valid)
+  const token = arr[1];
+  const valid = jwt.verify(token,process.env.JWT_SECRET);
   if (valid) {
      req.userId = valid.userId;
+     req.username = valid.username;
+     req.token = token;
   }
   next();
+  
+  
 }
 
 
@@ -72,20 +76,21 @@ app.get('/', (req, res) => {
 
   app.post('/user/login', async(req, res) => {
     const { username, password } = req.body;
-    //console.log('1',username)
-    //console.log('2',password)
+    console.log('1',username)
+    console.log('2',password)
     if (!username || !password ) throw new ValidationError('Incorrect username or password');
 
   try {
     const user = await usersCollection.findOne({ username: username });
-    //console.log('3',user)
+    console.log('3',user)
     if (!user) throw new DatabaseError('Incorrect username or password');
 
     const valid = await bcrypt.compare(password, user.password);
-    //console.log('4',valid)
+    console.log('4',valid)
     if (!valid) throw new DatabaseError('Incorrect username or password');
 
     const token = await setAuthCookies(res, user);
+    console.log(token)
     res.json( token );
 
   } catch (err) {
@@ -167,14 +172,13 @@ app.get('/', (req, res) => {
   })
 
 
-  app.post('/user/token/decrypt', (req, res) => {
-  const token = req.body.token;
-
+  app.get('/user/decodeToken', isLoggedIn, (req, res) => {
+      const userId = req.userId;
+      const username = req.username; 
+      const token = req.token;
   try {
-    const decoded = jwt.verify(token, secret);
-    console.log(decoded);
-    res.status(200).json(decoded);
 
+    res.status(200).json({userId: userId, username: username, token: token})
   }
   catch (err) {
     

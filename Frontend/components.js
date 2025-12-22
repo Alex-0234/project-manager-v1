@@ -81,33 +81,53 @@ export function mobileViewProjectList(events) {
     return modal;
 }
 
-export function renderWindow(events, type) {
+export function renderWindow(events, param) {
+    const type = param;
+    let modal;
 
-    const modal = createElement('div','signup-modal','',{
-    })
     const closeIcon = createCloseIcon();
     closeIcon.addEventListener('click', () => {
         modal.remove();
-    })
-    const emailInput = createElement('input','email-input','',{
-        placeholder: 'Email',
-        name: 'email',
-        required: true, 
-    })
-    const usernameInput = createElement('input','username-input','',{
-        placeholder: 'Username',
-        name: 'username',
-        required: true,
-    })
-    const passwordInput = createElement('input','password-input','',{
-        placeholder: 'Password',
-        name: 'password',
-        required: true,
+    });
 
-    })
-    const Submit = createElement('button','signup-button');
+    if (type === 'projectSetup') {
+        modal = createElement('div','project-setup-modal','',{ });
+        const projectNameInput = createElement('input','project-name-input','',{
+            placeholder: 'Project Name',
+            name: 'project-name',
+            required: true,
+        });
+        const projectDescInput = createElement('textarea','project-desc-input','',{
+            placeholder: 'Project Description',
+            name: 'project-desc',
+            required: true,
+        });
 
-    if ( type === 'sign-up') {
+        const Create = createElement('button','create-button');
+
+        modal.append(closeIcon, projectNameInput, projectDescInput, Create);
+        document.body.appendChild(modal);
+        return modal;
+    }
+    else if (type === 'sign-up') {
+        modal = createElement('div','signup-modal','',{ });
+        const emailInput = createElement('input','email-input','',{
+            placeholder: 'Email',
+            name: 'email',
+            required: true, 
+        });
+        const usernameInput = createElement('input','username-input','',{
+            placeholder: 'Username',
+            name: 'username',
+            required: true,
+        });
+        const passwordInput = createElement('input','password-input','',{
+            placeholder: 'Password',
+            name: 'password',
+            required: true,
+        });
+        const Submit = createElement('button','signup-button');
+
         Submit.addEventListener('click', () => {
             const user = {
                 username: usernameInput.value,
@@ -115,10 +135,26 @@ export function renderWindow(events, type) {
                 password: passwordInput.value
             }
             events.emit('user:register:attempt', user);
-            return;
         })
+
+        modal.append(closeIcon, usernameInput, emailInput, passwordInput, Submit);
+        document.body.appendChild(modal);
+        return modal;
+
     }
-    else {
+    else if (type === 'log-in') {
+        const modal = createElement('div','login-modal','',{ });
+        const usernameInput = createElement('input','username-input','',{
+            placeholder: 'Username',
+            name: 'username',
+            required: true,
+        });
+        const passwordInput = createElement('input','password-input','',{
+            placeholder: 'Password',
+            name: 'password',
+            required: true,
+        });
+        const Submit = createElement('button','login-button');
         Submit.addEventListener('click', () => {
                const user = {
                 username: usernameInput.value,
@@ -126,22 +162,12 @@ export function renderWindow(events, type) {
             }
             events.emit('user:login:attempt', user);
             modal.remove();
-            return;
         })
-    }
-    if(type === 'sign-up') {
-        modal.append(closeIcon, usernameInput, emailInput, passwordInput, Submit);
-    }
-    else {
+
         modal.append(closeIcon, usernameInput, passwordInput, Submit);
+        document.body.appendChild(modal);
+        return modal;
     }
-    document.body.appendChild(modal);
-    return modal;
-}
-
-
-export async function renderProjectSetupWindow() {
-    const modal = createElement();
-    const projectName = createElement();
+    
     
 }

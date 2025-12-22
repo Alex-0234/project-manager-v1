@@ -11,18 +11,6 @@ export default class UIManager {
         this.loadEvents();
     }
     loadEvents() {
-        this.events.on('UI:mobile:project:list', ()=> {
-            if (this.activeWindow) {
-                this.activeWindow.remove();
-                this.activeWindow = null;
-                this.activeWindow = mobileViewProjectList();
-            }
-            else {
-                this.activeWindow = mobileViewProjectList();
-                
-            }
-           
-        })   
         this.events.on('UI:render:user', () => {
             const signupWrapper = document.querySelector('.signup-wrapper');
             signupWrapper && signupWrapper.remove();
@@ -36,11 +24,20 @@ export default class UIManager {
         this.events.on('UI:render:projects', () => {
             // Logic to render / remove UI;
         });
+        this.events.on('UI:open:project:setup', () => {
+            this.activeWindow && this.activeWindow.remove();
+            this.activeWindow = renderWindow(this.events, 'projectSetup');
+        })
         this.events.on('UI:render:window', (payload) => { 
             this.activeWindow && this.activeWindow.remove();
             const modal = renderWindow(this.events, payload);
             this.activeWindow = modal;
         });
+        this.events.on('UI:user:projects:mobile', () => {
+            this.activeWindow && this.activeWindow.remove();
+            const projects = document.querySelector('.project-list');
+            projects.classList.toggle('invisible');
+        })
             
     }   
 

@@ -5,23 +5,26 @@ import UIManager from './UIManager.js'
 import ProjectManager from './ProjectManager.js'
 import TasksManager from './TasksManager.js'
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     
-
+    //localStorage.removeItem('token')
     const projectManager = new ProjectManager();
     const UI = new UIManager();
     const Authentication = new Auth();
     
     const menu = document.querySelector('.menu-icon');
     menu.addEventListener('click', ()=> {
-        const projectMenu = document.querySelector('.mobile-project-list-window').classList.toggle('invisible');
+        eventEmitter.emit('UI:user:projects:mobile');
     })
     const addProject = document.querySelector('.add-project');
     addProject.addEventListener('click', () => {
-        //eventEmitter.emit('UI:open:project:setup')
+        eventEmitter.emit('UI:open:project:setup')
     })
     
-    Authentication.checkLoginStatus();
+    await Authentication.checkLoginStatus();
+
+    console.log(projectManager.Projects);
+    await projectManager.renderUserProjects();
 
 })
 

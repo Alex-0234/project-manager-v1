@@ -1,10 +1,9 @@
 
 import User from './userState.js'
-import { jwtDecode } from './node_modules/jwt-decode/build/esm/index.js'
 import eventEmitter from './EventBus.js';
 
 export default class Auth {
-    constructor(events) {
+    constructor() {
         this.events = eventEmitter;
 
         this.loadEvents();
@@ -25,14 +24,34 @@ export default class Auth {
             this.login(username, password);
         })
         this.events.on('user:login:failed', () => {
-
+            User.userId = null;
+            User.username = null;
+            User.token = null;
+            User.isLoggedIn = false;
         })
-        this.events.on('user:login:success', (payload)=> {
-            const token = payload;
-            const decoded = jwtDecode(token);
+        this.events.on('user:login:success', async (payload)=> {
+            const { userId, username, token } = payload;
+            if (!userId || !username || !token) {
+                const res  = await fetch('http://localhost:5000/user/decodeToken', {
+                    method: 'GET',
+                    headers: {  'Content-Type': 'application/json',
+                                'authorization': `Bearer ${payload}` 
+                    }
+                })
+                if (res.ok) {
+                    const data = await res.json();
+                    User.userId = data.userId;
+                    User.username = data.username;
+                    User.token = data.token;
+                    User.isLoggedIn = true;
 
-            User.userId = decoded.userId;
-            User.username = decoded.username;
+                    this.events.emit('UI:render:user');
+
+                    return;
+            }}
+                
+            User.userId = userId;
+            User.username = username;
             User.token = token;
             User.isLoggedIn = true;
 
@@ -44,12 +63,26 @@ export default class Auth {
     }
     async checkLoginStatus() {
         const token = localStorage.getItem('token');
-        if (token) {
-            this.events.emit('user:login:success', token);
-        }
-        else {
+        if (!token || token === 'null') {
+            this.events.emit('user:login:failed');
             this.events.emit('UI:render:signup');
+            return;
         }
+
+            const res = await fetch('http://localhost:5000/user/decodeToken', {
+            method: 'GET',
+            headers: {  'Content-Type': 'application/json',
+                        'authorization': `Bearer ${token}` 
+            }
+        })
+        if (res.ok) {
+            const data = await res.json();
+            this.events.emit('user:login:success', data);
+        }
+
+
+        
+        
     } 
     async login(username, password) {
 

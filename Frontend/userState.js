@@ -5,6 +5,7 @@ let User = new Proxy({
     username: null, 
     token: null, 
     isLoggedIn: false,
+    projects: [],
     colorPreference: null,
 
     }, {
@@ -19,6 +20,9 @@ let User = new Proxy({
                 if ( value === true) {
                     eventEmitter.emit('request:user:projects');
                 }
+            }
+            case 'projects': {
+                eventEmitter.emit('UI:render:user:projects');
             }
 
         }
