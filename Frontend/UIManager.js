@@ -7,6 +7,7 @@ export default class UIManager {
     constructor() {
         this.events = eventEmitter;
         this.activeWindow = null;
+        this.activeProject = null;  
 
         this.loadEvents();
     }
@@ -21,8 +22,9 @@ export default class UIManager {
             exists && exists.remove();
             SignupWrapper(this.events);
         });
-        this.events.on('UI:render:projects', () => {
-            // Logic to render / remove UI;
+        this.events.on('UI:render:project', (project) => {
+            this.activeProject && this.activeProject.remove();
+            this.activeProject = renderWindow(this.events, project);
         });
         this.events.on('UI:open:project:setup', () => {
             this.activeWindow && this.activeWindow.remove();

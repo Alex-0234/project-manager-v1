@@ -23,8 +23,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     await Authentication.checkLoginStatus();
 
-    console.log(projectManager.Projects);
-    await projectManager.renderUserProjects();
-
 })
 

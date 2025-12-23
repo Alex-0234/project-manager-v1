@@ -89,7 +89,14 @@ export function renderWindow(events, param) {
     closeIcon.addEventListener('click', () => {
         modal.remove();
     });
-
+    if (typeof type === 'object') {
+        modal = createElement('div','project-modal','',{ });
+        const title = createElement('h2','project-title',`${type.name}`,{});
+        const desc = createElement('p','project-desc',`${type.description}`,{});    
+        modal.append(closeIcon, title, desc);
+        document.querySelector('.active-project').appendChild(modal);
+        return modal;
+    }
     if (type === 'projectSetup') {
         modal = createElement('div','project-setup-modal','',{ });
         const projectNameInput = createElement('input','project-name-input','',{

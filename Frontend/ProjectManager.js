@@ -35,11 +35,14 @@ export default class ProjectManager {
             }
     }
     async renderUserProjects() {
-        const container = document.querySelector('.project-list');
+        const container = document.querySelector('.projects-wrapper');
 
         User.projects.forEach(project => {
             console.log('project',project);
             const modal = createElement('div','project',`${project.name}`,{});
+            modal.addEventListener('click', () => {
+                this.events.emit('UI:render:project', project);
+            });
             container.appendChild(modal);
         });
         
